@@ -18,8 +18,9 @@ class IPProvider:
     def __init__(self):
         self.__ip_list = []
         self.__last_time = time.time()
-        self.__get_ip_list()
         self.count = 0
+
+        self.__get_ip_list()
 
     def __get_ip_list(self):
         if self.count < len(self.__ip_list) and time.time() - self.__last_time < 300:
