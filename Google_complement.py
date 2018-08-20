@@ -12,29 +12,17 @@ headers = {
 }
 
 url = 'https://www.google.com/search'
-# url = 'https://www.google.co.uk/search'
-proxies = {"http": "127.0.0.1:1080", "https": "127.0.0.1:1080"}
-
-
-# def get_html(payloads):
-#     try:
-#         html = requests.get(
-#             url,
-#             params=payloads,
-#             headers=headers,
-#             proxies=proxies,
-#         )
-#         html.encoding = "utf-8"
-#         return html.text if html.text is not None else ''
-#     except Exception as e:
-#         print(e)
-#         time.sleep(5)
+# proxies = {"http": "127.0.0.1:1080", "https": "127.0.0.1:1080"}
+proxy_host = "proxy.crawlera.com"
+proxy_port = "8010"
+proxy_auth = "0b3d10012b61488aa0667b27c829d5de:"
+proxies = {"https": "https://{}@{}:{}/".format(proxy_auth, proxy_host, proxy_port),
+           "http": "http://{}@{}:{}/".format(proxy_auth, proxy_host, proxy_port)}
 
 
 # 爬取网页返回soup对象
 def make_soup_google(payloads):
     content = ''
-
     try:
         html = requests.get(
             url,
@@ -74,7 +62,7 @@ def get_email_and_phone(key_words):
     emailRegex = re.compile(r"""([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,4}))""", re.VERBOSE)
     emailFilterRegex = re.compile(r"""^[Ee]-?mail""")
 
-    phoneRegex = re.compile(r"""[Pp]hone[,:]?\s*(\+\s?[\d]+\s?)?(\([\d\-. ]+\)\s{0,2})*(\d+[/.-]?\s?)*""", re.VERBOSE)
+    phoneRegex = re.compile(r"""([Pp]hone|[Mm]obile)[,:]?\s*(\+\s?[\d]+\s?)?(\([\d\-. ]+\)\s{0,2})*(\d+[/.-]?\s?)*""", re.VERBOSE)
     phoneFilterRegex = re.compile(r"""([Pp]hone|[Mm]obile)[,:]?\s*""")
 
     email = str()

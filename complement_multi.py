@@ -3,49 +3,34 @@ import openpyxl
 import Google_complement
 import multiprocessing
 import time
+import util.configure
+import sys
+import json
 
-path_reference = os.path.join(os.getcwd(), 'reference.xlsx')
-path_worksheet = os.path.join(os.getcwd(), 'result.xlsx')
+path_reference = os.path.join(os.getcwd(), 'gene.xlsx')
 reference = openpyxl.load_workbook(path_reference)
 sheet = reference.active
 
-column = {
-    "expert": "A",
-    "affiliation": "B",
-    "interests": "C",
-    "email": "D",
-    "phone": "E",
-    "address": "F",
-    "country": "G",
-    "language": "H",
-    "position": "I",
-    "name": "J",
-    "citedby": "K",
-    "hindex": "L",
-    "hindex5y": "M",
-    "i10index": "N",
-    "i10index5y": "O",
-    "url_picture": "P",
-}
+path_result = os.path.join(os.getcwd(), 'result')
+
+column = util.configure.column
 
 
-def complement(lock, lower, upper, batch=3):
+def complement(lock, lower, upper, batch=10):
     print(lower, "~", upper)
     while lower < upper:
         list_result = []
         for i in range(lower, lower + batch + 1):
-            if i > 5663:
+            if i > sheet.max_row:
                 break
             name = sheet[column["expert"] + str(i)].value
             name = name if name is not None else ''
             affiliation = sheet[column["affiliation"] + str(i)].value
             affiliation = affiliation if affiliation is not None else ''
-            search = (name + ' ' + affiliation)
+            search = (name + ' and ' + affiliation)
             print('-------------------------------------------------------')
             print(i, search)
 
-            email = ''
-            phone = ''
             address = ''
             country = ''
             language = ''
@@ -54,29 +39,21 @@ def complement(lock, lower, upper, batch=3):
             # # 搜索-补全email, phone
             email, phone = Google_complement.get_email_and_phone(search)
 
-            if len(affiliation) > 0:
-                address = Google_complement.get_address(affiliation)
-                country = Google_complement.get_country(affiliation)
-            else:
-                pass
+            # if len(affiliation) > 0:
+            #     address = Google_complement.get_address(affiliation)
+            #     country = Google_complement.get_country(affiliation)
+            # else:
+            #     pass
 
-            position = Google_complement.get_position(search)
+            # position = Google_complement.get_position(search)
 
             list_result.append((str(i), email, phone, address, country, language, position))
             print((str(i), email, phone, address, country, language, position))
 
         lock.acquire()
         try:
-            wb = openpyxl.load_workbook(path_worksheet)
-            st = wb.active
-            for item in list_result:
-                st[column["email"] + item[0]] = item[1]
-                st[column["phone"] + item[0]] = item[2]
-                st[column["address"] + item[0]] = item[3]
-                st[column["country"] + item[0]] = item[4]
-                st[column["language"] + item[0]] = item[5]
-                st[column["position"] + item[0]] = item[6]
-            wb.save(path_worksheet)
+            with open(path_result, 'a', encoding='utf-8') as f:
+                f.write(json.dumps(list_result))
         finally:
             lock.release()
 
@@ -84,12 +61,16 @@ def complement(lock, lower, upper, batch=3):
 
 
 if __name__ == '__main__':
-    counts = 690 - 582
-    begin_no = 582  # 562~3562
-
+    begin_no = int(sys.argv[1])
+    counts = int(sys.argv[2])
+    num_of_processing = 4 if len(sys.argv) < 4 else int(sys.argv[3])
     have_done = 0
-    num_of_processing = 1
+
+    if begin_no + counts > sheet.max_row:
+        counts = sheet.max_row - begin_no + 1
+
     quarter = counts // num_of_processing
+
     lock = multiprocessing.Lock()
 
     arg_list = [
@@ -104,17 +85,3 @@ if __name__ == '__main__':
     for i in range(1, num_of_processing + 1):
         process = multiprocessing.Process(target=complement, args=arg_list[i - 1])
         process.start()
-
-    # lock = multiprocessing.Lock()
-
-    # arg_list = [
-    #     # (lock, 5246, 5662),
-    #     (lock, 3711, 3793),
-    #     (lock, 3864, 3939),
-    #     (lock, 5246, 5662),
-    #
-    # ]
-    #
-    # for i in arg_list:
-    #     process = multiprocessing.Process(target=complement, args=i)
-    #     process.start()

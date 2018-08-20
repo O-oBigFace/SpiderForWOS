@@ -73,7 +73,7 @@ if __name__ == '__main__':
     path_worksheet = os.path.join(os.getcwd(), 'result.xlsx')
     wb = openpyxl.load_workbook(path_worksheet)
     st = wb.active
-    for i in range(2, 5664):
+    for i in range(2, st.max_row + 1):
         st[column["language"] + str(i)] = choose_language(st[column['country'] + str(i)].value)
 
     wb.save(path_worksheet)
