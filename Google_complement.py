@@ -29,10 +29,10 @@ def make_soup_google(payloads):
             params=payloads,
             headers=headers,
             proxies=proxies,
+            verify=False,
         )
         html.encoding = "utf-8"
         content = html.text
-        time.sleep(7)
     except Exception as e:
         print(e)
 
