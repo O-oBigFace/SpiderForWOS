@@ -6,6 +6,8 @@ import time
 import util.configure
 import sys
 import json
+import warnings
+warnings.filterwarnings('ignore')
 
 path_reference = os.path.join(os.getcwd(), 'gene.xlsx')
 reference = openpyxl.load_workbook(path_reference)
