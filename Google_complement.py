@@ -2,7 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import time
-
+import warnings
+warnings.filterwarnings('ignore')
 headers = {
     'accept': '*/*',
     'accept-encoding': 'gzip, deflate, br',
@@ -29,7 +30,7 @@ def make_soup_google(payloads):
             params=payloads,
             headers=headers,
             proxies=proxies,
-            verify=False,
+            verify=False
         )
         html.encoding = "utf-8"
         content = html.text
