@@ -13,6 +13,9 @@ reference = openpyxl.load_workbook(path_reference)
 sheet = reference.active
 
 path_result = os.path.join(os.getcwd(), 'result')
+path_record = os.path.join(os.getcwd(), 'record')
+with open(path_record, 'r', encoding='utf-8') as f:
+    record = json.loads(f.read())
 
 column = util.configure.column
 
@@ -22,7 +25,7 @@ def complement(lock, lower, upper, batch=10):
     while lower < upper:
         list_result = []
         for i in range(lower, lower + batch + 1):
-            if i > sheet.max_row:
+            if record[str(i)] or i > sheet.max_row:
                 break
             name = sheet[column["expert"] + str(i)].value
             name = name if name is not None else ''
@@ -54,7 +57,8 @@ def complement(lock, lower, upper, batch=10):
         lock.acquire()
         try:
             with open(path_result, 'a', encoding='utf-8') as f:
-                f.write(json.dumps(list_result))
+                for rs in list_result:
+                    f.write(json.dumps(rs) + '\n')
         finally:
             lock.release()
 
